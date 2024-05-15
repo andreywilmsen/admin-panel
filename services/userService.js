@@ -1,6 +1,6 @@
 
 const userService = {
-    get: async (req, res) => {
+    testService: async (req, res) => {
         let response = "Hello from GET";
         return { response };
     },
