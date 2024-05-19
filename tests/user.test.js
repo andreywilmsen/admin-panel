@@ -71,6 +71,83 @@ describe("Registro de usuário", function () {
 
 });
 
+describe("Login", function () {
+    it("Deve efetuar o login do usuário", async () => {
+        return request.get("/login").send(mainUser)
+            .then(res => {
+                expect(res.statusCode).toEqual(200);
+                expect(res.body.message).toEqual("Usuário logado com sucesso")
+            }).catch(err => {
+                throw err;
+            })
+    })
+
+    it("Deve verificar se o email informado está cadastrado", async () => {
+        let user = {
+            email: "usuariodeteste@gmail.com",
+            password: "123456"
+        };
+
+        return request.get("/login").send(user)
+            .then(res => {
+                expect(res.statusCode).toEqual(400);
+                expect(res.body.message).toEqual("Usuário ou senha incorretos");
+            }).catch(err => {
+                throw err;
+            })
+    })
+
+    it("Deve coincidir o password informado com o password registrado no login", async () => {
+        let user = {
+            email: "andreywilmsendepaula@gmail.com",
+            password: "1234567"
+        };
+
+        return request.get("/login").send(user)
+            .then(res => {
+                expect(res.statusCode).toEqual(400);
+                expect(res.body.message).toEqual("Usuário ou senha incorretos")
+            }).catch(err => {
+                throw err;
+            })
+    })
+
+    it("Deve gerar um token de acesso ao efetuar o login", async () => {
+        return request.get("/login").send(mainUser)
+            .then(res => {
+                expect(res.statusCode).toEqual(200);
+                expect(res.body.token).toBeDefined()
+            }).catch(err => {
+                throw err;
+            })
+    })
+})
+
+describe("Autenticação", function () {
+    it("Deve verificar se o token fornecido é valido e retornar o usuário referente ao token", async () => {
+        let token = { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFuZHJleXdpbG1zZW5kZXBhdWxhQGdtYWlsLmNvbSIsImlkIjoiNjY0YTI1ZDMzNTg4MWM4MzNiYmRiYzViIiwiaWF0IjoxNzE2MTM1Mzg1fQ.9xaDBbJBYzM-vS_uWs_jbDrAH4-UdH1Ej-Ji0lBXOvQ" };
+
+        return request.post("/auth").send(token)
+            .then(res => {
+                expect(res.statusCode).toEqual(200);
+                expect(res.body.user).toBeDefined();
+            }).catch(err => {
+                throw err;
+            })
+    })
+    it("Deve retornar como usuário não autorizado caso informe um token inválido", async () => {
+        let token = { token: "AAAeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFuZHJleXdpbG1zZW5kZXBhdWxhQGdtYWlsLmNvbSIsImlkIjoiNjY0YTFiNmYxZmQyNGFhODY5YWQ2MDllIiwiaWF0IjoxNzE2MTMyNzIzLCJleHAiOjE3MTYzMDU1MjN9.YkylBZJ2BPsRPF9ZAhkeua5-a-0yuOmd9psgK4vGJoQ" };
+
+        return request.post("/auth").send(token)
+            .then(res => {
+                expect(res.statusCode).toEqual(400);
+                expect(res.body.message).toEqual("Usuário não autorizado");
+            }).catch(err => {
+                throw err;
+            })
+    })
+})
+
 describe("Deletar usuário", function () {
     it("Deve excluir usuário pelo email fornecido", async () => {
         return request.delete(`/user/${mainUser.email}`)
