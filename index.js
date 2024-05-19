@@ -4,6 +4,7 @@ const app = express();
 const PORT = process.env.PORT;
 const router = require('./routes/routes');
 const path = require('path');
+const db = require('./db/conn');
 
 app.use("/", express.json(), router);
 
